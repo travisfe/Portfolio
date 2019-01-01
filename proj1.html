@@ -1,0 +1,530 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- saved from url=(0071)https://www.csee.umbc.edu/~jtang/archives/cs421.f17/homework/proj1.html -->
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>CMSC 421 Fall 2017</title>
+	<link href="./proj1_files/style.css" rel="stylesheet" type="text/css">
+	
+    <style></style></head>
+    <body>
+	<div id="wrap">
+	    <div id="masthead">
+		<h1>CMSC 421: Principles of Operating Systems</h1>
+		<div id="menucontainer">
+		    <div id="menunav">
+			<ul>
+			    <li><a href="https://www.csee.umbc.edu/~jtang/archives/cs421.f17/index.html"><span>Home</span></a></li>
+			    <li><a href="https://www.csee.umbc.edu/~jtang/archives/cs421.f17/syllabus.html"><span>Syllabus</span></a></li>
+			    <li><a href="https://www.csee.umbc.edu/~jtang/archives/cs421.f17/schedule.html"><span>Schedule</span></a></li>
+			    <li><a href="https://www.csee.umbc.edu/~jtang/archives/cs421.f17/homework/index.html" class="current"><span>Homework</span></a></li>
+			    <li><a href="https://www.csee.umbc.edu/~jtang/archives/cs421.f17/resources.html"><span>Resources</span></a></li>
+			</ul>
+		    </div>
+		</div>
+	    </div>
+	    <div id="fullcontent">
+
+<h2>Project 1: Mastermind Kernel Module</h2>
+
+<p>
+  This project is due on Tuesday, November 21, at 11:59:59 PM (Eastern
+  standard time). You <em>must</em> use <em>submit</em> to turn in
+  your project like so:
+  <kbd>
+submit cs421_jtang proj1 mastermind.c mastermind-test.c
+  </kbd>
+</p>
+
+<p>
+  Your module code must be named <tt>mastermind.c</tt>, and it will
+  be compiled against a 4.12 Linux kernel source tree, via the Kbuild
+  supplied below. It must not have any compilation
+  warnings; <strong>warnings will result in grading
+  penalties</strong>. This module code must be properly indented and
+  have a file header comment, as described on
+  the <a href="https://www.csee.umbc.edu/~jtang/archives/cs421.f17/homework/codingstd.html">coding conventions</a> page. Prior to
+  submission, use the kernel's indentation script to reformat your
+  code, like so:
+  </p><pre>    ~/linux/scripts/Lindent mastermind.c
+  </pre>
+<p></p>
+
+<p>
+  In addition, you will write a unit test
+  program, <tt>mastermind-test.c</tt>, and it will be compiled on
+  Ubuntu 16.04 as follows:
+</p><pre>  gcc ‐‐std=c99 ‐Wall ‐O2 ‐pthread ‐o mastermind-test mastermind-test.c ‐lm
+</pre>
+  There must not be any compilation warnings in your submission;
+  <strong>warnings will result in grading penalties</strong>. In
+  addition, this code must also have a file header comment and be
+  properly indented. You will submit this test code along with your
+  module code.
+<p></p>
+
+<p>
+  <em>Mastermind</em> is a code breaking game invented in the early
+  1970s, based upon an earlier game called <em>Bulls and Cows</em>. In
+  both games, the <em>codemaker</em> selects a <strong>4</strong>
+  digit code, where each digit ranges from <strong>0</strong>
+  through <strong>5</strong>, inclusive. The code can have repeating
+  digits. The opposing player, the <em>codebreaker</em>, then tries to
+  guess the code. For each guess, the codemaker marks which digit is
+  correct in both value and position (a <em>black peg</em>) and which
+  is simply correct in value (a <em>white peg</em>). There are many
+  variations of this game playable online; the one closest to the
+  spirit of this
+  assignment <a href="http://www.archimedes-lab.org/mastermind.html">uses
+  colors instead of digits</a>.
+</p>
+
+<p>
+  In this project, you will write a Linux kernel module that
+  implements the basics of Mastermind. The Linux kernel itself will
+  take the role of the codemaker, while human users will be
+  codebreakers.  Your module will create
+  two <a href="http://www.linuxjournal.com/article/2920">
+  miscellaneous devices</a>, <tt>/dev/mm</tt>
+  and <tt>/dev/mm_ctl</tt>. The user controls the game state by
+  writing to <tt>/dev/mm_ctl</tt>, then make guesses by writing
+  to <tt>/dev/mm</tt>. The module calculates the number of black and
+  white pegs, and generates a status message. The user retrieves the
+  status message by reading from <tt>/dev/mm</tt>, then continues
+  guessing. The user can also obtain a history of the current game,
+  showing all guesses and responses, by opening a memory map
+  to <tt>/dev/mm</tt>.
+</p>
+
+<h2>Part 1: Compile Mastermind Module</h2>
+
+<blockquote>
+  All instructions henceforth assume you successfully
+  completed <a href="https://www.csee.umbc.edu/~jtang/archives/cs421.f17/homework/hw1.html">the first homework</a>. If you have not
+  done so, go back and finish the homework before proceeding. You have
+  been warned.
+</blockquote>
+
+<p>
+  To begin, create a directory for your project and download the
+  following files into that directory via <tt>wget</tt>:
+  </p><dl>
+    <dt>
+      <a href="https://www.csee.umbc.edu/~jtang/archives/cs421.f17/homework/proj1/mastermind.c">http://www.csee.umbc.edu/~jtang/cs421.f17/homework/proj1/mastermind.c</a>
+    </dt>
+    <dd>
+      Skeleton code for your Mastermind kernel module.
+    </dd>
+    <dt>
+      <a href="https://www.csee.umbc.edu/~jtang/archives/cs421.f17/homework/proj1/mastermind-test.c">http://www.csee.umbc.edu/~jtang/cs421.f17/homework/proj1/mastermind-test.c</a>
+    </dt>
+    <dd>
+      Skeleton code for your unit test code.
+    </dd>
+    <dt>
+      <a href="https://www.csee.umbc.edu/~jtang/archives/cs421.f17/homework/proj1/Kbuild">http://www.csee.umbc.edu/~jtang/cs421.f17/homework/proj1/Kbuild</a>
+    </dt>
+    <dd>
+      Read by Linux kernel's build system, defines what is being
+      built. You do not need to modify this file, nor should you
+      submit it with your work.
+    </dd>
+    <dt>
+      <a href="https://www.csee.umbc.edu/~jtang/archives/cs421.f17/homework/proj1/Makefile">http://www.csee.umbc.edu/~jtang/cs421.f17/homework/proj1/Makefile</a>
+    </dt>
+    <dd>
+      Builds the kernel module and unit test program, by simply
+      running <kbd>make</kbd>. Also included is a <em>clean</em>
+      target to remove all built objects. You do not need to modify
+      this file, nor should you submit it with your work.
+    </dd>
+  </dl>
+<p></p>
+
+<p>
+  Now run <kbd>make</kbd> to compile everything. You will get some
+  warnings about unused symbols; by the end of this project you will
+  have used all of them. You should now have the kernel
+  module <tt>mastermind.ko</tt>. Load that module like so:
+  </p><pre>    sudo insmod mastermind.ko <em>(enter your password as necessary)</em>
+</pre>
+  The module was inserted if the following returns a non-empty
+  string:
+  <pre>    lsmod | grep mastermind
+</pre>
+<p></p>
+
+<p>
+  So far, all this module does is write a message to the
+  kernel's <a href="http://unix.stackexchange.com/questions/122048/where-does-the-kernel-ring-buffer-sit-relative-to-rsyslog">ring
+  buffer</a>. View the module messages like so:
+  </p><pre>    dmesg | tail
+</pre>
+  The number at the beginning is the time stamp of when the message
+  was written. To unload the module, run this command:
+  <pre>    sudo rmmod mastermind
+</pre>
+  Re-examine the ring buffer to see the message generated during
+  module exit. Every time you make a change and
+  recompile <tt>mastermind.c</tt>, you will need to first unload the
+  module and then reinsert it.
+<p></p>
+
+<p>
+  When the <tt>mastermind</tt> module is loaded, the kernel calls
+  its <em>init</em> function (similar to a C
+  program's <code>main()</code> function), where execution begins.
+  Currently, this module's <em>init</em> function
+  calls <code>pr_info()</code>
+  and <a href="http://www.makelinux.net/ldd3/chp-8-sect-4">allocates
+  some memory</a> for itself. The <code>pr_info()</code> function is
+  an easy way to generate logging messages within kernel code. It
+  accepts a format string like <code>printf()</code>, but has
+  additional <a href="https://www.kernel.org/doc/Documentation/printk-formats.txt">format
+  specifiers useful for kernel programming</a>.
+</p>
+
+<h2>Part 2: Create Miscellaneous Devices</h2>
+
+<blockquote>
+  You are about to make changes to your Linux kernel. There is a
+  slight chance of accidentally erasing your virtual machine's hard
+  drive. Create a snapshot of your virtual machine before proceeding.
+</blockquote>
+
+<p>
+  Creating a custom character device can be daunting, and in this
+  project, you will create <em>two</em> of them. Fortunately, the
+  Linux kernel has the miscellaneous devices subsystem to simplify
+  this task. For this project, the <tt>mastermind</tt> module will
+  use <em>miscdevice</em> to control <tt>/dev/mm</tt>
+  and <tt>/dev/mm_ctl</tt>.
+</p>
+
+<p>
+  Start off by examining <tt>mastermind.c</tt>, specifically the stub functions
+  <code>mm_read()</code> and <code>mm_write()</code>, and the
+  prewritten function
+  <code>mm_mmap()</code>.  Follow these steps to create the
+  device <tt>/dev/mm</tt>:
+  </p><ol>
+    <li>
+      Create a global variable of type <code>static const struct
+	file_operations</code> to handle <tt>/dev/mm</tt>. Set
+	its <code>read</code> callback
+	to <code>mm_read</code>, <code>write</code> callback
+	to <code>mm_write</code>, and <code>mmap</code>
+	callback to <code>mm_mmap</code>.
+    </li>
+    <li>
+      Create a global variable of type <code>static struct
+	miscdevice</code> for <tt>/dev/mm</tt>. Set
+	its <code>minor</code> field
+	to <code>MISC_DYNAMIC_MINOR</code>, <code>name</code> field
+	to <code>"mm"</code>, <code>fops</code> field
+	to point to the previously created <code>struct
+	file_operations</code>, and <code>mode</code> callback
+	to <code>0666</code>.
+    </li>
+    <li>
+      In <code>mastermind_init()</code>,
+      call <code>misc_register()</code> to create the character
+      device. In <code>mastermind_exit()</code>
+      call <code>misc_deregister()</code> to undo the registration.
+    </li>
+  </ol>
+  When modifying <code>mastermind_init()</code>, you are responsible
+  for freeing all resources in case of an
+  error. Specifically, <code>mastermind_init()</code> should be
+  structured with <code>goto</code>
+  statements <a href="http://www.xml.com/ldd/chapter/book/ch02.html#buierr">to
+  clean up resources</a>.
+<p></p>
+
+<p>
+  If all of the above works, when the module is loaded, you will now
+  have a character device <tt>/dev/mm</tt>:
+  </p><pre>    $ sudo insmod mastermind.ko
+    $ ls -l /dev/mm
+    crw-rw-rw- 1 root root 10, 56 Oct 28 18:38 /dev/mm
+    $ echo -n 'Hi there' &gt; /dev/mm
+    bash: echo: write error: Operation not permitted
+  </pre>
+  If implemented incorrectly, your kernel ring buffer may contain a
+  message that looks like this:
+  <pre>    [27656.939815] Oops: 0000 [#1] SMP
+    [27656.939815] Modules linked in: mastermind(O+) ntfs msdos vboxsf(O) snd_intel8x0 snd_ac97_codec ac97_bus
+    vboxvideo(O) snd_pcm drm_kms_helper snd_seq_oss snd_seq_midi_event syscopyarea snd_seq sysfillrect snd_seq_
+    device sysimgblt snd_timer fb_sys_fops ttm snd drm soundcore vboxguest(O) serio_raw autofs4 hid_generic usb
+    hid hid psmouse ohci_pci e1000 ohci_hcd [last unloaded: mastermind]
+    [27656.939815] CPU: 3 PID: 3624 Comm: insmod Tainted: G           O    4.12.9+ #3
+    [27656.939815] Hardware name: innotek GmbH VirtualBox/VirtualBox, BIOS VirtualBox 12/01/2006
+    [27656.939815] task: ffff9d41e5d4e040 task.stack: ffffa47200ce8000
+    [27656.939815] RIP: 0010:misc_register+0xd/0x170
+    [27656.939815] RSP: 0018:ffffa47200cebc80 EFLAGS: 00010246
+    [27656.939815] RAX: ffffffffc03a8420 RBX: ffffffffc03a80c0 RCX: 0000000000000000
+    [27656.939815] RDX: 0000000000000000 RSI: ffffffffc03a70cf RDI: 0000000000000000
+    [27656.939815] RBP: ffffa47200cebc98 R08: ffffa47200c60000 R09: 00003fffffe00000
+    [27656.939815] R10: ffff9d421625aa90 R11: ffffa47200c5ffff R12: 0000000000000018
+    [27656.939815] R13: 0000000000000000 R14: ffffffffc03a8110 R15: 0000000000000001
+    [27656.939815] FS:  00007f49009cc700(0000) GS:ffff9d421fd80000(0000) knlGS:0000000000000000
+    [27656.939815] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+    [27656.940466] CR2: 0000000000000000 CR3: 000000016ea8b000 CR4: 00000000000406a0
+    [27656.940484] Call Trace:
+    [27656.940494]  ? 0xffffffffc024e000
+    [27656.940505]  mastermind_init+0x59/0x1000 [mastermind]
+    [27656.940522]  do_one_initcall+0x4e/0x180
+  </pre>
+  Read the call trace to determine where within your code caused the
+  fault that the Linux kernel had detected. Most errors are
+  unrecoverable; a symptom of an unrecoverable condition is when the
+  kernel refuses to unload the module:
+  <pre>    $ sudo rmmod mastermind
+    rmmod: ERROR: Module mastermind is in use
+  </pre>
+  In this case, your only recourse is to reboot the virtual machine.
+<p></p>
+
+<p>
+  After creating the <tt>/dev/mm</tt> miscellaneous device, similarly
+  create the <tt>/dev/mm_ctl</tt> device. This second device has only
+  one callback, <code>write</code>, which should be set
+  to <code>mm_ctl_write</code>. As before, ensure that all calls
+  within <code>mastermind_init()</code> are checked and resources are
+  released upon error.
+</p>
+
+<h2>Part 3: Implement Game Control and Status Message</h2>
+
+<p>
+  The next step is to implement the
+  callback <code>mm_ctl_write()</code>. Read its comments. This
+  function needs to parse the user's input. If the user
+  writes <kbd>start</kbd> to <tt>/dev/mm_ctl</tt>, then start a new
+  game:
+  </p><ul>
+    <li>Set the target code to <strong>0012</strong>.</li>
+    <li>Set the number of guesses made so far to 0.</li>
+    <li>Clear the contents of <code>user_view</code>.</li>
+    <li>Set <code>game_active</code> to <code>true</code>.</li>
+    <li>Set the game status message.</li>
+  </ul>
+  Be aware that <code>mm_ctl_write()</code> starts a game when the
+  user enters <kbd>start</kbd>, <strong>not</strong> <kbd>start</kbd>
+  plus a newline character.
+<p></p>
+
+<p>
+  If instead the user enters <kbd>quit</kbd> (again, without the
+  trailing newline), then set <code>game_active</code>
+  to <code>false</code> and the game status message with the target
+  code.
+</p>
+
+<p>
+  When constructing game statuses, use the Linux kernel-specific
+  function <code>scnprintf()</code>. <a href="https://lwn.net/Articles/69419/">This
+  function prevents common buffer overflow problems inherent
+  to <code>snprintf()</code>.</a>
+</p>
+
+<p>
+  Now implement <code>mm_read()</code>. This function simply copies
+  the game status to the user. It is responsible for handling partial
+  reads and non-zero offsets.
+</p>
+
+<p>
+  Recompile and reinsert your module. You should now be able to
+  minimally interact with your game:
+  </p><pre>    $ sudo insmod mastermind.ko
+    $ cat /dev/mm
+    No game yet
+    $ echo "start" &gt; /dev/mm_ctl
+    bash: echo: write error: Invalid argument
+    $ echo -n "start" &gt; /dev/mm_ctl
+    $ cat /dev/mm
+    Starting game
+    $ echo -n "quit" &gt; /dev/mm_ctl
+    $ cat /dev/mm
+    Game over. The code was 0012.
+  </pre>
+  Note how the above passes the <kbd>‐n</kbd> flag
+  to <tt>echo</tt> to suppress the trailing newline.
+<p></p>
+
+<h2>Part 4: Implement Game Play</h2>
+
+<p>
+  The next function to implement is <code>mm_write()</code>. Parse the
+  user's input as per the function's comments:
+  </p><ul>
+    <li>
+      Handle up to the first <code>NUM_PEGS</code> characters. Convert
+      the ASCII characters in the guess to their numeric equivalent.
+    </li>
+    <li>
+      Calculate the number of black pegs, based upon guessed digits,
+      that have both the correct value and correct position.
+    </li>
+    <li>
+      Calculate the number of white pegs, based upon guessed digits,
+      that are the correct value but incorrect position. Duplicate
+      guesses of the same digit are bounded by the number of actual
+      digits. For example, if the user guesses <strong>1153</strong>,
+      then this function only calculates one white peg.
+    </li>
+    <li>
+      Increment the number of guesses made.
+    </li>
+    <li>
+      Update the game status with the number of black and white pegs.
+    </li>
+    <li>
+      Append to <code>user_view</code> a string (null-terminated) with
+      the guessed digits, number of black pegs, and number of white
+      pegs.
+    </li>
+  </ul>
+<p></p>
+
+<p>
+  Recompile and reinsert your module. You should now be able to play
+  the game:
+  </p><pre>    $ sudo insmod mastermind.ko
+    $ echo -n "start" &gt; /dev/mm_ctl
+    $ echo -n "0022" &gt; /dev/mm
+    $ cat /dev/mm
+    Guess 1: 3 black peg(s), 0 white peg(s)
+    $ echo -n "2010" &gt; /dev/mm
+    $ cat /dev/mm
+    Guess 2: 2 black peg(s), 2 white peg(s)
+    $ echo -n "5432" &gt; /dev/mm
+    $ cat /dev/mm
+    Guess 3: 1 black peg(s), 0 white peg(s)
+    $ echo -n "I WIN" &gt; /dev/mm
+    bash: echo: write error: Invalid argument
+    $ echo -n "0012" &gt; /dev/mm
+    $ cat /dev/mm
+    Guess 4: 4 black peg(s), 0 white peg(s)
+  </pre>
+<p></p>
+
+<p>
+  Write for yourself a minimal C program that creates a read-only
+  memory map to <tt>/dev/mm</tt>. Use <code>PAGE_SIZE</code> as the
+  number of bytes to map. <code>PAGE_SIZE</code> is defined in the
+  header <tt>&lt;sys/user.h&gt;</tt>. For the above sequence of
+  guesses, the memory map contents should thus be:
+  </p><pre>    Guess 1: 0022  | B3 W0
+    Guess 2: 2010  | B2 W2
+    Guess 3: 5432  | B1 W0
+    Guess 4: 0012  | B4 W0
+  </pre>
+<p></p>
+
+<h2>Part 5: Unit Tests and Documentation</h2>
+
+<p>
+  Now that you have (in theory) a fully working module, you must then
+  write your own unit tests. Modify <tt>mastermind-test.c</tt> to
+  open <tt>/dev/mm</tt> and <tt>/dev/mm_ctl</tt>. Again, create a
+  read-only memory mapping to <tt>/dev/mm</tt>. This program is to
+  exercise all of the functionality as described above. This includes
+  a mix of inputs when writing to the device nodes, reading and
+  verifying the contents of the memory map, and verifying the
+  calculations of black and white pegs are correct.
+</p>
+
+<p>
+  You will need to create your own testing framework; as a suggestion,
+  reuse the one <a href="https://www.csee.umbc.edu/~jtang/archives/cs421.f17/homework/hw4_test.c">employed in homework 4</a>. The
+  unit tests must have comments that explain what things are being
+  tested. Your goal is to
+  test <a href="http://reqtest.com/testing-blog/what-is-boundary-value-analysis-and-equivalence-partitioning/">boundary
+  conditions</a> of your miscellaneous devices; you will be graded
+  based upon the thoroughness of the tests. For example, you are
+  responsible for checking that user cannot read past the length of
+  the game status.
+</p>
+
+<p>
+  As that your tests will perform multiple reads and writes from the
+  devices, you will probably need
+  to <a href="http://stackoverflow.com/questions/32366665/resetting-pointer-to-the-start-of-file">reposition
+  your file pointer</a> after each operation.
+</p>
+
+
+<h2>Other Hints and Notes</h2>
+<p>
+  </p><ul>
+    <li>
+      Ask plenty of questions on Blackboard.
+    </li>
+    <li>
+      At the top of your submission, list any help you received as
+      well as web pages you consulted. Please do not use any URL
+      shorteners, such as goo.gl or tinyurl.
+    </li>
+    <li>
+      Use
+      the <a href="http://lxr.free-electrons.com/source/?v=4.12">Linux
+      Cross-Reference</a> website to quickly search through kernel
+      source code.
+    </li>
+    <li>
+      You may modify any of the provided code. You may need to add
+      more functions and global variables than those provided.
+    </li>
+    <li>
+      If you dynamically allocate any additional memory, you are
+      responsible for freeing them during module unload.
+    </li>
+    <li>
+      Make sure you indent your code one last time prior to
+      submission. <strong>Unindented kernel code will result in
+      grading penalties.</strong>
+    </li>
+  </ul>
+<p></p>
+
+<h2>Extra Credit</h2>
+
+<p>
+  Normally, the kernel module always picks the same target code
+  of <strong>0012</strong>. This does not make for an interesting game
+  after the first play. You may earn an additional 10% on this
+  assignment by randomly selecting the target code. Add the following
+  features to your code:
+  </p><ul>
+    <li>
+      Add
+      a <a href="https://www.linux.com/learn/kernel-newbie-corner-everything-you-wanted-know-about-module-parameters">kernel
+      module parameter</a>, <code>random_code</code>, that defaults
+      to <code>false</code>.
+    </li>
+    <li>
+      If <code>random_code</code> is <code>true</code>,
+      then <a href="https://stackoverflow.com/questions/12961299/generate-random-number-in-kernel-module">randomly
+      select 4 digits</a>.
+    </li>
+    <li>
+      Add a command line parameter to <tt>mastermind-test.c</tt> that,
+      if specified, tests that the target code really is randomized.
+    </li>
+  </ul>
+<p></p>
+
+<p>
+  If you choose to perform this extra credit, put a comment at the top
+  of your file, alerting the grader.
+</p>
+
+	    </div>
+	</div>
+	<div id="footer">
+	    Adapted from a CSS design by <a href="http://www.mitchinson.net/">
+		www.mitchinson.net</a><br>
+	</div>
+    
+
+</body></html>

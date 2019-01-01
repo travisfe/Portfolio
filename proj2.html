@@ -1,0 +1,634 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- saved from url=(0071)https://www.csee.umbc.edu/~jtang/archives/cs421.f17/homework/proj2.html -->
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>CMSC 421 Fall 2017</title>
+	<link href="./proj2_files/style.css" rel="stylesheet" type="text/css">
+	
+    <style></style></head>
+    <body>
+	<div id="wrap">
+	    <div id="masthead">
+		<h1>CMSC 421: Principles of Operating Systems</h1>
+		<div id="menucontainer">
+		    <div id="menunav">
+			<ul>
+			    <li><a href="https://www.csee.umbc.edu/~jtang/archives/cs421.f17/index.html"><span>Home</span></a></li>
+			    <li><a href="https://www.csee.umbc.edu/~jtang/archives/cs421.f17/syllabus.html"><span>Syllabus</span></a></li>
+			    <li><a href="https://www.csee.umbc.edu/~jtang/archives/cs421.f17/schedule.html"><span>Schedule</span></a></li>
+			    <li><a href="https://www.csee.umbc.edu/~jtang/archives/cs421.f17/homework/index.html" class="current"><span>Homework</span></a></li>
+			    <li><a href="https://www.csee.umbc.edu/~jtang/archives/cs421.f17/resources.html"><span>Resources</span></a></li>
+			</ul>
+		    </div>
+		</div>
+	    </div>
+	    <div id="fullcontent">
+
+<h2>Project 2: The Return of the Mastermind</h2>
+
+<p>
+  This project is due on Sunday, December 17, at 11:59:59 PM (Eastern
+  standard time). You <em>must</em> use the <em>submit</em> command to
+  turn in your assignment like so:
+  <kbd>
+submit cs421_jtang proj2 mastermind2.c mastermind2-test.c
+  </kbd>
+</p>
+
+<p>
+  Your driver code must be named <tt>mastermind2.c</tt>, and it will be
+  compiled against a 4.12 Linux kernel source tree, via the Kbuild
+  supplied below. It must not have any compilation
+  warnings; <strong>warnings will result in grading
+  penalties</strong>. This module code must be properly indented and
+  have a file header comment, as described on
+  the <a href="https://www.csee.umbc.edu/~jtang/archives/cs421.f17/homework/codingstd.html">coding conventions</a> page. Prior to
+  submission, use the kernel's indentation script to reformat your
+  code, like so:
+  </p><pre>    ~/linux/scripts/Lindent mastermind2.c
+  </pre>
+<p></p>
+
+<p>
+  In addition, you will write a unit test
+  program, <tt>mastermind2-test.c</tt>, and it will be compiled on
+  Ubuntu 16.04 as follows:
+</p><pre>  gcc ‐‐std=c99 ‐Wall ‐O2 ‐pthread ‐o mastermind2-test mastermind-test.c cs421net.c ‐lm
+</pre>
+  There must not be any compilation warnings in your submission;
+  <strong>warnings will result in grading penalties</strong>. In
+  addition, this code must also have a file header comment and be
+  properly indented. You will submit this test code along with your
+  driver code.
+<p></p>
+
+<p>
+  In the first project, you wrote <a href="https://www.csee.umbc.edu/~jtang/archives/cs421.f17/homework/proj1.html">a rudimentary
+  implementation of the game <em>Mastermind</em></a>. In this project,
+  you will expand that code to create a full-fledged game. This
+  improved version adds game statistics, configuration option, a
+  second player, and multiple simultaneous games.
+</p>
+
+<h2>Part 1: Obtain Necessary Files</h2>
+
+<blockquote>
+  All instructions henceforth assume you successfully
+  completed <a href="https://www.csee.umbc.edu/~jtang/archives/cs421.f17/homework/proj1.html">the first project</a>. If you have
+  not done so, go back and finish that assignment before
+  proceeding. You have been warned.
+</blockquote>
+
+<p>
+  To begin, create a directory for your project and download the
+  following files into that directory via <tt>wget</tt>:
+  </p><dl>
+    <dt>
+      <a href="https://www.csee.umbc.edu/~jtang/archives/cs421.f17/homework/proj2/mastermind2.c">http://www.csee.umbc.edu/~jtang/cs421.f17/homework/proj2/mastermind2.c</a>
+    </dt>
+    <dd>
+      Skeleton code for your kernel driver.
+    </dd>
+    <dt>
+      <a href="https://www.csee.umbc.edu/~jtang/archives/cs421.f17/homework/proj2/mastermind2-test.c">http://www.csee.umbc.edu/~jtang/cs421.f17/homework/proj2/mastermind2-test.c</a>
+    </dt>
+    <dd>
+      Skeleton code for your unit test code.
+    </dd>
+  </dl>
+  In addition, download these files into that same directory. You will
+  not need to modify any of these files, nor should you submit any of
+  them with your work.
+  <dl>
+    <dt>
+      <a href="https://www.csee.umbc.edu/~jtang/archives/cs421.f17/homework/proj2/Kbuild">http://www.csee.umbc.edu/~jtang/cs421.f17/homework/proj2/Kbuild</a>
+    </dt>
+    <dd>
+      Read by Linux kernel's build system, defines what is being
+      built.
+    </dd>
+    <dt>
+      <a href="https://www.csee.umbc.edu/~jtang/archives/cs421.f17/homework/proj2/Makefile">http://www.csee.umbc.edu/~jtang/cs421.f17/homework/proj2/Makefile</a>
+    </dt>
+    <dd>
+      Builds the kernel module and unit test program, by simply
+      running <kbd>make</kbd>. Also included is a <em>clean</em>
+      target to remove all built objects.
+    </dd>
+    <dt>
+      <a href="https://www.csee.umbc.edu/~jtang/archives/cs421.f17/homework/proj2/xt_cs421net.c">http://www.csee.umbc.edu/~jtang/cs421.f17/homework/proj2/xt_cs421net.c</a>
+    </dt>
+    <dd>
+      A <em>Netfilter module</em> that simulates a network device.
+    </dd>
+    <dt>
+      <a href="https://www.csee.umbc.edu/~jtang/archives/cs421.f17/homework/proj2/xt_cs421net.h">http://www.csee.umbc.edu/~jtang/cs421.f17/homework/proj2/xt_cs421net.h</a>
+    </dt>
+    <dd>
+      Header file that declares symbols defined in <tt>xt_cs421net.h</tt>.
+    </dd>
+    <dt>
+      <a href="https://www.csee.umbc.edu/~jtang/archives/cs421.f17/homework/proj2/cs421net.c">http://www.csee.umbc.edu/~jtang/cs421.f17/homework/proj2/cs421net.c</a>
+    </dt>
+    <dd>
+      Adds networking functions to your unit test code.
+    </dd>
+    <dt>
+      <a href="https://www.csee.umbc.edu/~jtang/archives/cs421.f17/homework/proj2/cs421net.h">http://www.csee.umbc.edu/~jtang/cs421.f17/homework/proj2/cs421net.h</a>
+    </dt>
+    <dd>
+      Header file that declares symbols defined in <tt>cs421net.c</tt>.
+    </dd>
+    <dt>
+      <a href="https://www.csee.umbc.edu/~jtang/archives/cs421.f17/homework/proj2/proj2_start.sh">http://www.csee.umbc.edu/~jtang/cs421.f17/homework/proj2/proj2_start.sh</a>
+    </dt>
+    <dd>
+      Shell script that reconfigures network settings needed for this
+      project.  After downloading this file, mark the script
+      executable (<kbd>chmod u+x proj2_start.sh</kbd>).
+    </dd>
+    <dt>
+      <a href="https://www.csee.umbc.edu/~jtang/archives/cs421.f17/homework/proj2/proj2_stop.sh">http://www.csee.umbc.edu/~jtang/cs421.f17/homework/proj2/proj2_stop.sh</a>
+    </dt>
+    <dd>
+      Shell script that disables network settings that were needed for
+      this project. After downloading this file, mark the script
+      executable (<kbd>chmod u+x proj2_stop.sh</kbd>).
+    </dd>
+  </dl>
+<p></p>
+
+<p>
+  After downloading all of these files into a new directory, copy your
+  work from Project 1 as follows:
+  </p><ol>
+    <li>
+      Copy your implementation
+      of <code>mm_read()</code>, <code>mm_write()</code>, <code>mm_mmap()</code>,
+      and <code>mm_ctl_write()</code> into the top part
+      of <tt>mastermind2.c</tt>. Also copy any preprocessor symbols,
+      global variables, and helper functions you used. If you had
+      attempted the extra credit, copy those routines as well.
+    </li>
+    <li>
+      Merge the contents of your <code>mastermind_init()</code>
+      into <code>mastermind_probe()</code>. Observe how the supplied
+      code performs another resource allocation
+      via <code>device_create_file()</code>. You are responsible for
+      integrating that call into your code, in that all resources must
+      be properly released upon error.
+    </li>
+    <li>
+      Merge the contents of your <code>mastermind_exit()</code>
+      into <code>mastermind_remove()</code>. Observe how the converse
+      to <code>device_create_file()</code>
+      is <code>device_remove_file()</code>.
+    </li>
+    <li>
+      Overwrite <tt>mastemind2-test.c</tt> with your working code
+      from <tt>mastermind-test.c</tt>.
+    </li>
+  </ol>
+<p></p>
+
+<p>
+  Now run <kbd>make</kbd> to compile everything. Upon success, you
+  should now have the kernel driver <tt>mastermind2.ko</tt> and user
+  space
+  program <tt>mastermind2-test</tt>. Run <tt>proj2_start.sh</tt>; it
+  may ask for your password, as that it runs some commands
+  under <tt>sudo</tt>. This will set up your VM for this
+  project. Rerun this script if you ever need to reboot your
+  VM. <strong>Do not run <tt>proj2_start.sh</tt> itself
+  under <tt>sudo</tt>.</strong>
+</p>
+
+<p>
+  Unload the <tt>mastermind</tt> module, if was still loaded from the
+  previous loaded. Then use <tt>insmod</tt> to
+  load <tt>mastermind2.ko</tt>. You should (again) have
+  the <tt>/dev/mm</tt> and <tt>/dev/mm_ctl</tt> device nodes. You should
+  also have
+  a <a href="https://www.kernel.org/doc/Documentation/filesystems/sysfs.txt">new
+  virtual file</a>, <tt>/sys/devices/platform/mastermind/stats</tt>.
+</p>
+
+<h2>Part 2: Cleanup Existing Code</h2>
+
+<p>
+  A few tasks were accidentally omitted from the first project. Add
+  these minor features to your code.
+</p>
+
+<p>
+  First, multiple threads may access the device nodes. Add a global
+  spin lock variable. Guard accesses to all four file operations
+  callbacks
+  (<code>mm_read()</code>, <code>mm_write()</code>, <code>mm_mmap()</code>,
+  and <code>mm_ctl_write()</code>) with that spin lock.
+</p>
+
+<p>
+  Then detect when the user correctly guesses the target code. When
+  that happens, set the status message to something appropriate and
+  then end the game. As an example, if the target code
+  is <strong>0012</strong>:
+  </p><pre>    $ echo -n "start" &gt; /dev/mm_ctl
+    $ echo -n "0012" &gt; /dev/mm
+    $ cat /dev/mm
+    Correct! Game over
+    $ echo -n "0012" &gt; /dev/mm
+    bash: echo: write error: Invalid argument
+  </pre>
+  Also update the contents of the memory map to say that the game is
+  over.
+<p></p>
+
+<h2>Part 3: Add Game Settings</h2>
+
+<p>
+  The next task is to add a new command to <tt>/dev/mm_ctl</tt>, that
+  allows the number of colors to be set.
+  </p><ol>
+    <li>
+      The syntax for this command is <kbd>colors X</kbd>,
+      where <kbd>X</kbd> must be a number between 2 and 9,
+      inclusive.
+    </li>
+    <li>
+      The command is exactly eight characters; it does not include a
+      trailing null nor newline character.
+    </li>
+    <li>
+      Only permit a system administrator (that is, a user
+      with <em>CAP_SYS_ADMIN</em> capability) to use this
+      command. <a href="http://elixir.free-electrons.com/linux/v4.12.14/source/kernel/capability.c#L428">If
+      the calling process lacks it</a>, return <code>-EACCES</code>.
+    </li>
+    <li>
+      If the new number of colors is less than two or greater than
+      nine, return <code>-EINVAL</code>.
+    </li>
+    <li>
+      When the <tt>mastermind2</tt> module is first loaded, set the
+      number of colors to six.
+    </li>
+    <li>
+      Changes to the number of colors is <em>silent</em>, in that
+      active games stay active without any notification that the range
+      has changed. This could cause a game to not be winnable if the
+      target code contains a color that is no longer guessable by the
+      user.
+    </li>
+    <li>
+      If extra credit from Proj1 was implemented, modify the routine
+      that generates the target code to use the new color range
+      whenever a new game is started.
+    </li>
+  </ol>
+<p></p>
+
+<p>
+  Then add a new global variable that tracks the number of games
+  started.  Then implement the function <code>mm_stats_show()</code>,
+  as per its comments. This function generates a human-readable
+  message that contains these game statistics:
+  </p><ul>
+    <li>Current number of colors</li>
+    <li>Number of pegs in the target code</li>
+    <li>Number of games started.</li>
+  </ul>
+  Don't forget to guard this function with the spin lock.
+<p></p>
+
+<p>
+  Test the new <kbd>colors</kbd> command from the command line like
+  so: <kbd>sudo sh -c 'echo -n "colors 7" &gt;
+    /dev/mm_ctl'</kbd>. If everything above works:
+  </p><pre>    $ echo -n "colors 1" &gt; /dev/mm_ctl
+    bash: echo: write error: Permission denied
+    $ echo -n "colors 5" &gt; /dev/mm_ctl
+    bash: echo: write error: Permission denied
+    $ sudo sh -c 'echo -n "colors 1" &gt; /dev/mm_ctl'
+    sh: echo: I/O error
+    $ sudo sh -c 'echo -n "colors 5" &gt; /dev/mm_ctl'
+    $ cat /sys/devices/platform/mastermind/stats
+    CS421 Mastermind Stats
+    Number of pegs: 4
+    Number of colors: 5
+    Number of games started: 0
+  </pre>
+<p></p>
+
+<h2>Part 4: Add Interrupt Handling</h2>
+
+<p>
+  Thus far, the secret code has always been <strong>0012</strong>
+  (unless you implemented the extra credit, in which it is a random
+  number). To better simulate the real <em>Mastermind</em> game, a
+  remote opponent will be permitted to set the target code. Read the
+  comments in the file <tt>xt_cs421net.c</tt>. When this Netfilter
+  module is installed, via the <tt>proj2_start.sh</tt> script, it will
+  raise an interrupt every time your computer receives network packets
+  on TCP port 4210. It is your driver's responsibility to handle those
+  interrupts and treat the packets as a remote attempt to set the
+  target code.
+</p>
+
+<p>
+  In <code>mastermind_probe()</code>, install a threaded interrupt handler
+  for interrupt number <code>CS421NET_IRQ</code>. Remove that handler
+  in
+  <code>mastermind_remove()</code>. This is a resource allocation, and
+  thus <code>mastermind_probe()</code> must properly handle error
+  conditions.
+</p>
+
+<p>
+  Then implement <code>cs421net_top()</code>
+  and <code>cs421net_bottom()</code>. The network payload must be
+  exactly 4 bytes and contain only valid colors; ignore all other
+  payloads. Set the target code to the new code. As with setting the
+  number of colors, this too is a <em>silent</em> operation; the
+  player receives no notification that the code changed, and all
+  previous status messages read from <tt>/dev/mm</tt>, as well as the
+  memory mapping, are now obsolete.
+</p>
+
+<p>
+  Add two more global variables, one that counts the number of times
+  the code was remotely changed, and another that counts the number of
+  invalid attempts at changing the code. Report these counters
+  in <code>mm_stats_show()</code>.
+</p>
+
+<p>
+  As that <code>cs421net_bottom()</code> will be modifying global
+  variables, be sure to guard the code with a spin lock.
+</p>
+
+<p>
+  Once you are confident your ISR works,
+  call <code>cs421net_enable()</code>
+  in <code>mastermind_probe()</code>, and likewise disable network
+  integration via <code>cs421net_disable()</code>
+  in <code>mastermind_remove()</code>. Install your module, and
+  check <tt>/proc/interrupts</tt> to ensure the ISR was registered.
+</p>
+
+<p>
+  To test this part, ensure you earlier
+  ran <tt>proj2_start.sh</tt>. Send a remote code change with the
+  <a href="http://www.tutorialspoint.com/unix_commands/nc.htm">handy <tt>nc</tt>
+  command</a>:
+  </p><pre>    $ echo -n 'start' &gt; /dev/mm_ctl
+    $ echo -n '0000' &gt; /dev/mm
+    $ cat /dev/mm
+    Guess 1: 2 black peg(s), 0 white peg(s)
+    $ echo -n '4442' | nc localhost 4210
+    $ echo -n '0000' &gt; /dev/mm
+    $ cat /dev/mm
+    Guess 2: 0 black peg(s), 0 white peg(s)
+    $ echo -n '444A' | nc localhost 4210
+    $ echo -n '4442BCD' | nc localhost 4210
+    $ cat /sys/devices/platform/mastermind/stats
+    CS421 Mastermind Stats
+    Number of pegs: 4
+    Number of colors: 6
+    Number of times code was changed: 1
+    Number of invalid code change attempts: 2
+    Number of games started: 1
+  </pre>
+<p></p>
+
+<h2>Part 5: Support Multiple Games</h2>
+
+<blockquote>
+  You are about to make numerous changes to your code. Make a backup
+  of your files prior to tackling this part.
+</blockquote>
+
+<p>
+  The final task, and the most challenging for this project, is to add
+  support for multiple players. The goal is allow each user to play
+  his own game. Thus far, all of the game states are stored in
+  multiple global variables. Follow these instructions carefully to
+  convert those global variables into a linked list of variables.
+</p>
+
+<p>
+  Declare a new <code>struct</code> called <code>mm_game</code>. Move
+  these global variables into fields within that <code>struct
+  mm_game</code>:
+  </p><ul>
+    <li><code>game_active</code>,</li>
+    <li><code>target_code</code>,</li>
+    <li><code>num_guesses</code>,</li>
+    <li><code>game_status</code>, and</li>
+    <li><code>user_view</code>.</li>
+  </ul>
+  If you had other global variables that affected game play, move
+  those into the <code>struct</code> as well. Define a single global
+  variable of type <code>struct mm_game</code>. Create a new
+  function, <code>find_game()</code>, which simply returns a pointer
+  to that single global variable. Then update all of your callbacks to
+  call <code>find_game()</code> to retrieve a pointer to
+  a <code>struct mm_game</code>; use that pointer to access what used
+  to be global variables. Recompile and test these changes so far.
+<p></p>
+
+<p>
+  The next step is to dynamically allocate a pointer of
+  type <code>struct mm_game</code>. Replace that single global
+  variable of type <code>struct mm_game</code> with a global pointer
+  to a <code>struct mm_game</code>. In <code>find_game()</code>, if
+  that pointer is <code>NULL</code>, then dynamically allocate
+  (with <code>kmalloc()</code> or <code>kzalloc()</code>)
+  a <code>struct mm_game</code> and store the resulting value to the
+  pointer. Still in that function, dynamically allocate space for
+  the <code>user_view</code> field
+  (with <code>vmalloc()</code>). In <code>mastermind_probe()</code>,
+  remove the allocation to <code>user_view</code>, adjusting that
+  function's error handling to avoid any memory leaks. Then
+  update <code>mastermind_remove()</code> to
+  free <code>user_view</code> (with <code>vfree()</code>) and the
+  global pointer itself (with <code>kfree()</code>) , but only if that
+  pointer is not <code>NULL</code>. Ensure there are no race
+  conditions during the memory allocations. Recompile and test these
+  changes so far.
+</p>
+
+<p>
+  Now add to <code>struct mm_game</code> a field of
+  type <code>kuid_t</code>. Change <code>find_game()</code> to take a
+  parameter of type <code>kuid_t</code>. Update all callers
+  to <code>find_game()</code> to pass in the user ID (UID) via the
+  <a href="http://elixir.free-electrons.com/linux/v4.12.14/source/include/linux/cred.h#L356">macro <code>current_uid()</code></a>. Store
+  the UID within the <code>struct mm_game</code> after the pointer was
+  allocated. Because there is no current UID
+  when <code>mastermind_probe()</code>
+  and <code>mastermind_remove()</code> are invoked, you will need to
+  rewrite those functions. Restructure your code so
+  that <code>mastermind_probe()</code> no longer uses the global
+  pointer or
+  invokes <code>find_game()</code>. Update <code>mastermind_remove()</code>
+  to avoid calling <code>find_game()</code>, instead having it access
+  the global pointer directly. Recompile and test these changes so
+  far.
+</p>
+
+<p>
+  Finally, add to <code>struct mm_game</code> a field of
+  type <code>struct list_head</code>. Replace the global pointer with
+  a variable of type <code>struct list_head</code> (using
+  the <code>LIST_HEAD</code> macro). In <code>find_game()</code>,
+  search for a linked list node whose UID matches the passed in
+  parameter. If one exists, return a pointer to that node. Otherwise,
+  allocate a new node, set that node's <code>uid</code> field to the
+  passed in parameter, append the node to the global linked list, then
+  return a pointer to that node. Update <code>cs421net_bottom()</code>
+  to change all
+  games' <code>target_code</code>s. In <code>mastermind_remove()</code>, <a href="https://stackoverflow.com/questions/9207850/why-do-we-need-list-for-each-safe-in-for-deleting-nodes-in-kernel-linked-list">safely
+  free all memory associated with the linked list</a>, including the
+  dynamically allocated <code>user_view</code> within.
+</p>
+
+<p>
+  Be aware
+  of <a href="http://stackoverflow.com/questions/14097389/how-to-get-userid-when-writing-linux-kernel-module">various</a> <a href="http://stackoverflow.com/questions/18950481/how-do-i-get-current-user-in-the-kernel-ie-how-to-call-current-uid-the-right-wa">blog
+  posts</a> describing how to compare UIDs. Kernel UIDs have changed;
+  many older blog posts are
+  inaccurate. <a href="http://elixir.free-electrons.com/linux/v4.12.14/source/include/linux/uidgid.h#L60">There
+  is an explicit function to compare UIDs in modern kernels.</a>
+</p>
+
+<p>
+  If everything works, each user has an independent game:
+  </p><pre>    $ echo -n 'start' &gt; /dev/mm_ctl
+    $ cat /dev/mm
+    Starting game
+    $ sudo cat /dev/mm
+    No game yet
+    $ sudo sh -c 'echo -n "start" &gt; /dev/mm_ctl'
+    $ echo -n '3322' &gt; /dev/mm
+    $ sudo sh -c 'echo -n "0123" &gt; /dev/mm'
+    $ cat /dev/mm
+    Guess 1: 1 black peg(s), 0 white peg(s)
+    $ sudo cat /dev/mm
+    Guess 1: 1 black peg(s), 2 white peg(s)
+    $ cat /sys/devices/platform/mastermind/stats
+    CS421 Mastermind Stats
+    Number of pegs: 4
+    Number of colors: 6
+    Number of times code was changed: 0
+    Number of invalid code change attempts: 0
+    Number of games started: 2
+  </pre>
+  Be sure to try other UIDs besides yourself and root. Use
+  the <a href="https://www.digitalocean.com/community/tutorials/how-to-add-and-delete-users-on-ubuntu-16-04"><tt>adduser</tt>
+  command to create new user
+  accounts</a>. Then <a href="https://askubuntu.com/questions/222984/can-i-log-in-with-other-users-account">use <tt>su</tt>
+  to log in as another user</a>.
+<p></p>
+
+<h2>Part 6: Testing and Documentation</h2>
+
+<p>
+  Now that you have (in theory) a working driver, you must then write
+  your own unit tests. Read the networking code
+  in <tt>cs421net.h</tt>. You can use <code>cs421net_send()</code> to
+  send arbitrary messages to the CS421Net server. Modify
+  <tt>mastermind2-test.c</tt> to exercise all functionality of this
+  assignment. This includes a mix of inputs when writing to the device
+  nodes and network socket, confirming that only system administrators
+  can set the number of colors, and that each user can play his/her
+  own game. Two functions that may be of use are <code>getuid()</code>
+  and <code>getresuid()</code>. You should avoid
+  using <code>system()</code>, and instead learn how to perform I/O
+  yourself.
+</p>
+
+<p>
+  The unit tests must have comments that explain what things are being
+  tested. As before, your goal is to test boundary conditions of your
+  driver's interfaces. You will be graded based upon the thoroughness
+  of the tests.
+</p>
+
+<p>
+  Assume that grader will run your unit tests from a "fresh"
+  installation. That is, the grader will have just loaded your driver
+  prior to running your unit tests. If your unit test program requires
+  to be run as the root user (i.e., under <tt>sudo</tt>), indicate as
+  such within a comment at the top of the file. Also specify if you
+  require additional accounts to be created prior to running your test
+  code.
+</p>
+
+<h2>Other Hints and Notes</h2>
+<p>
+  </p><ul>
+    <li>
+      Ask plenty of questions on the Blackboard discussion board.
+    </li>
+    <li>
+      At the top of your submission, list any help you received as
+      well as web pages you consulted. Please do not use any URL
+      shorteners, such as goo.gl or tinyurl.
+    </li>
+    <li>
+      Use
+      the <a href="http://lxr.free-electrons.com/source/?v=4.12">Linux
+      Cross-Reference</a> website to quickly search through kernel
+      source code.
+    </li>
+    <li>
+      You may modify any of the provided code. You may need to add
+      more functions and global variables than those listed above.
+    </li>
+    <li>
+      Make sure all resources are released in all error paths. This
+      includes unlocking spin locks, freeing kernel memory, freeing
+      the IRQ, and deregistering miscellaneous devices.
+    </li>
+    <li>
+      Make sure you indent your code one last time prior to
+      submission. <strong>Unindented kernel code will result in
+      grading penalties.</strong>
+    </li>
+  </ul>
+<p></p>
+
+<h2>Extra Credit</h2>
+
+<p>
+  You may earn an additional 10% credit for this assignment by
+  tracking another statistic. Record the fastest completion of a game
+  and that player's UID, then display this high score
+  in <tt>/sys/devices/platform/mastermind/stats</tt> You will need to
+  store the current timestamp whenever a game starts, then calculate
+  the time spent playing when the game is won.
+</p>
+
+<p>
+  Update <tt>mastermind-test.c</tt> to test this new
+  functionality. Explicitly add a unit test that finishes the game in
+  some (mostly) deterministic amount of time, then check
+  that <tt>mm_stats_show()</tt> calculated the correct time. Then
+  switch to another user and beat the game faster. Check
+  that <tt>mm_stats_show()</tt> returns an updated time and UID.
+</p>
+
+<p>
+  If you choose to perform this extra credit, put a comment at the top
+  of your file, alerting the grader.
+</p>
+
+	    </div>
+	</div>
+	<div id="footer">
+	    Adapted from a CSS design by <a href="http://www.mitchinson.net/">
+		www.mitchinson.net</a><br>
+	</div>
+    
+
+</body></html>
