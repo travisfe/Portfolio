@@ -1,5 +1,9 @@
 Processor circuit built in logisim. Implements instruction set created by instructor Jason Tang at UMBC (see ULNAv1.pdf) for instruction set details
-multiplier.img generated from test program provided by Jason Tang
+multiplier.img generated from test program multiplier.S provided by Jason Tang
+ulna-as.c is an assembler for the instruction set provided by Jason Tang
+Makefile provided by Jason Tang
+ulna-dis.c Dissasembler created by Travis Earley
+
 
 All non-basic components (adders etc.) created by Travis Earley using basic components in logisim
 
