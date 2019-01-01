@@ -1,0 +1,12 @@
+Processor circuit built in logisim. Implements instruction set created by instructor Jason Tang at UMBC (see ULNAv1.pdf) for instruction set details
+multiplier.img generated from test program provided by Jason Tang
+
+All non-basic components (adders etc.) created by Travis Earley using basic components in logisim
+
+Instructions using Logisim:
+1. Reset simulation
+2. Load multiplier.img into instruction memory (left side RAM)
+3. Enable simulation
+4. Enable ticks
+5. Wait until system halts (repeats insutruction f800)
+6. Stop simulation, then examine data memory (right side RAM) 0xfffe for result (last memory adress)
