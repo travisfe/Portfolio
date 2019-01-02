@@ -1,0 +1,10 @@
+Details about mastermind game:
+Mastermind is a code breaking game where the codemaker selects a 4 digit code, where each digit ranges from 0 through 5, inclusive. Repeating digits are allowed. Another player tries to guess the code. For each guess, the codemaker marks which digit is correct in both value and position (a black peg) and which is simply correct in value (a white peg).
+
+This game is implimented using a linux kernel module, as two miscellaneous devices. One device (mm_ctl) is written to to control the game (such as starting or eneding the game session). The other device (mm) is written to to quess code, and read from to get current game status (type/number of pegs)
+
+As part of a file not included, an interrupt is raised to be handled by this module when the system recieves network packets on TCP port 4210. This module handles those interupts, which if valid are attempts by a real or simulated remote user to change the code that is meant to be guessed by the player. 
+
+The module also checkes user ids, so each user can have their own unique concurrent game.
+
+mastermind2-test.c is a unit test that tests all of the functionality of the mastermind2 module.
