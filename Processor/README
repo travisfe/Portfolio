@@ -1,4 +1,5 @@
-Processor circuit built in logisim. Implements instruction set created by instructor Jason Tang at UMBC (see ULNAv1.pdf) for instruction set details
+Processor circuit built in logisim. Implements instruction set created by instructor Jason Tang at UMBC
+(see ULNAv1.pdf for instruction set details)
 multiplier.img generated from test program provided by Jason Tang
 ulna-dis.c Dissasembler for UNLA assembly created by Travis Earley
 
