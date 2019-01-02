@@ -1,1 +1,13 @@
+Extreemly basic code used as basis found here: https://iamtrask.github.io/2015/07/12/basic-python-network/
+
+The goal of the neural net is to predict whether an object is close or far away from the origin. Close is defined here as within 3
+miles.
+
+The data is layed out in a csv file with the first row and column each containing title information. Each row is an observation.
+There are 16 columns not including the title column for the data. The first 13 are each one sensor, which say how far an object is
+from that particular sensor. They are labeles 'N/A' if the object is not in range of the sensor. The last 3 columns contain the
+actual x coordinate of the object, the actual y coordinate of the object, and the distance from the origin.
+
+
+
 
