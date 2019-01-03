@@ -1,2 +1,9 @@
 # Portfolio
-Portfolio of my Work
+
+Mastermind a version of the mastermind code breaking game implimented in a linux kernel module
+
+Processor is a processor made in Logisim
+
+Neural Net is a neural network made using python
+
+Each project has its own README with more detailed information
