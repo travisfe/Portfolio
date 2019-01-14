@@ -1,28 +1,4 @@
-/* 
-https://stackoverflow.com/questions/15774548/check-for-user-root-within-linux-kernel
-
-https://isis.poly.edu/kulesh/stuff/src/klist/
-
-https://stackoverflow.com/questions/13552536/get-current-time-in-seconds-in-kernel-module
-*/
-
-/*
- * This file uses kernel-doc style comments, which is similar to
- * Javadoc and Doxygen-style comments.  See
- * ~/linux/Documentation/kernel-doc-nano-HOWTO.txt for details.
- */
-
-/*
- * Getting compilation warnings?  The Linux kernel is written against
- * C89, which means:
- *  - No // comments, and
- *  - All variables must be declared at the top of functions.
- * Read ~/linux/Documentation/CodingStyle to ensure your project
- * compiles without warnings.
- */
-
 #define pr_fmt(fmt) "mastermind2: " fmt
-
 #include <linux/capability.h>
 #include <linux/cred.h>
 #include <linux/fs.h>
@@ -43,11 +19,6 @@ https://stackoverflow.com/questions/13552536/get-current-time-in-seconds-in-kern
 #include <linux/random.h>
 #include <linux/time.h>
 #include <linux/moduleparam.h>
-#include "xt_cs421net.h"
-
-/* Copy mm_read(), mm_write(), mm_mmap(), and mm_ctl_write(), along
- * with all of your global variables and helper functions here.
- */
 
 #define NUM_PEGS 4
 int num_games;
@@ -297,47 +268,6 @@ static ssize_t mm_write(struct file *filp, const char __user * ubuf,
 }
 
 /**
- * mm_mmap() - callback invoked when a process mmap()s to /dev/mm
- * @filp: process's file object that is mapping to this device (ignored)
- * @vma: virtual memory allocation object containing mmap() request
- *
- * Create a read-only mapping from kernel memory (specifically,
- * @user_view) into user space.
- *
- * Code based upon
- * <a href="http://bloggar.combitech.se/ldc/2015/01/21/mmap-memory-between-kernel-and-userspace/">http://bloggar.combitech.se/ldc/2015/01/21/mmap-memory-between-kernel-and-userspace/</a>
- *
- * You do not need to modify this function.
- *
- * Return: 0 on success, negative on error.
- */
-static int mm_mmap(struct file *filp, struct vm_area_struct *vma)
-{
-	struct mm_game *gm;
-	unsigned long size = (unsigned long)(vma->vm_end - vma->vm_start);
-	unsigned long page;
-	spin_lock(&lock);
-	gm = find_game(current_uid());
-	if (!gm) {
-		spin_unlock(&lock);
-		return -ENOMEM;
-	}
-	page = vmalloc_to_pfn(gm->user_view);
-	if (size > PAGE_SIZE) {
-		spin_unlock(&lock);
-		return -EIO;
-	}
-	vma->vm_pgoff = 0;
-	vma->vm_page_prot = PAGE_READONLY;
-	if (remap_pfn_range(vma, vma->vm_start, page, size, vma->vm_page_prot)) {
-		spin_unlock(&lock);
-		return -EAGAIN;
-	}
-	spin_unlock(&lock);
-	return 0;
-}
-
-/**
  * mm_ctl_write() - callback invoked when a process writes to
  * /dev/mm_ctl
  * @filp: process's file object that is writing to this device (ignored)
@@ -353,9 +283,6 @@ static int mm_mmap(struct file *filp, struct vm_area_struct *vma)
  *  quit  - Quit the current game. If no game was in progress, do nothing.
  *
  * If the input is none of the above, then return -EINVAL.
- *
- * <em>Caution: @ubuf is NOT a string; it is not necessarily
- * null-terminated.</em> You CANNOT use strcpy() or strlen() on it!
  *
  * Return: @count, or negative on error
  */
@@ -498,15 +425,6 @@ static irqreturn_t cs421net_top(int irq, void *cookie)
  * types the code was changed remotely. Otherwise, ignore the packet
  * and increment the number of invalid change attempts.
  *
- * During Part 5, update this function to change all codes for all
- * active games.
- *
- * Remember to add appropriate spin lock calls in this function.
- *
- * <em>Caution: The incoming payload is NOT a string; it is not
- * necessarily null-terminated.</em> You CANNOT use strcpy() or
- * strlen() on it!
- *
  * Return: always IRQ_HANDLED
  */
 static irqreturn_t cs421net_bottom(int irq, void *cookie)
@@ -559,8 +477,6 @@ static irqreturn_t cs421net_bottom(int irq, void *cookie)
  *   - Number of valid network messages (see Part 4)
  *   - Number of invalid network messages (see Part 4)
  *   - Number of active players (see Part 5)
- * Note that @buf is a normal character buffer, not a __user
- * buffer. Use scnprintf() in this function.
  *
  * @return Number of bytes written to @buf, or negative on error.
  */
@@ -645,14 +561,6 @@ static DEVICE_ATTR(stats, S_IRUGO, mm_stats_show, NULL);
  */
 static int mastermind_probe(struct platform_device *pdev)
 {
-	/* Copy the contents of your original mastermind_init() here. */
-	/* YOUR CODE HERE */
-
-	/*
-	 * You will need to integrate the following resource allocator
-	 * into your code. That also means properly releasing the
-	 * resource if the function fails.
-	 */
 	int retval;
 	spin_lock(&lock);
 	retval = device_create_file(&pdev->dev, &dev_attr_stats);
@@ -699,8 +607,6 @@ free1:
  */
 static int mastermind_remove(struct platform_device *pdev)
 {
-	/* Copy the contents of your original mastermind_exit() here. */
-	/* YOUR CODE HERE */
 	struct list_head *pos, *here;
 	struct mm_game *gm;
 	pr_info("Freeing resources.\n");
@@ -732,12 +638,6 @@ static struct platform_driver cs421_driver = {
 
 static struct platform_device *pdev;
 
-/**
- * cs421_init() -  create the platform driver
- * This is needed so that the device gains a sysfs group.
- *
- * <strong>You do not need to modify this function.</strong>
- */
 static int __init cs421_init(void)
 {
 	pdev = platform_device_register_simple("mastermind", -1, NULL, 0);
@@ -750,7 +650,6 @@ static int __init cs421_init(void)
  * cs421_exit() - remove the platform driver
  * Unregister the driver from the platform bus.
  *
- * <strong>You do not need to modify this function.</strong>
  */
 static void __exit cs421_exit(void)
 {
